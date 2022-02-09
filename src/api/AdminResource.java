@@ -36,8 +36,8 @@ public class AdminResource {
         customerService.printAllCustomers();
     }
 
-    public void addRoom(String roomNumber, Double price, RoomType roomType) {
-        reservationService.addRoom(roomNumber, price, roomType);
+    public String addRoom(String roomNumber, Double price, RoomType roomType) {
+        return reservationService.addRoom(roomNumber, price, roomType);
     }
 
     public Collection<IRoom> getAllRooms() {

@@ -19,16 +19,25 @@ public class CustomerService {
 
     Map<String, Customer> customers = new HashMap<>();
 
-    public void addCustomer(String firstName, String lastName, String email) {
+    public String addCustomer(String firstName, String lastName, String email) {
+        if (Objects.equals(firstName, "")) {
+            return "First name cannot be blank";
+        }
+        if (Objects.equals(lastName, "")) {
+            return "Last name cannot be blank";
+        }
+        if (Objects.equals(email, "")) {
+            return "Email cannot be blank";
+        }
         if (customers.get(email) != null) {
-            System.out.println("Email already in use");
-            return;
+            return "Email already in use";
         }
         try {
             Customer customer = new Customer(firstName, lastName, email);
             customers.put(email, customer);
+            return "Customer created";
         } catch (Exception ex) {
-            System.out.println("Invalid email");
+            return "Invalid email";
         }
     }
 
@@ -42,8 +51,10 @@ public class CustomerService {
 
     public void printAllCustomers() {
         if (customers.isEmpty()) {
-            System.out.println("No customers yet.");
+            System.out.println("No customers yet");
+        } else {
+            System.out.println("Customers");
+            customers.values().forEach(System.out::println);
         }
-        customers.values().forEach(System.out::println);
     }
 }

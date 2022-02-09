@@ -13,6 +13,6 @@ public class FreeRoom extends Room {
 
     @Override
     public String toString() {
-        return String.format("Room number %s is a %s type free room.", roomNumber, roomType);
+        return String.format("Room number %s - %s - Free", roomNumber, roomType);
     }
 }

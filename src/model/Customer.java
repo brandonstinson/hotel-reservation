@@ -26,7 +26,7 @@ public class Customer {
 
     @Override
     public String toString() {
-        return String.format("Customer %s %s is reachable at %s", firstName, lastName, email);
+        return String.format("%s %s (%s)", firstName, lastName, email);
     }
 
     public static Boolean isValidEmail(String email) {

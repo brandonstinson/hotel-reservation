@@ -29,8 +29,8 @@ public class HotelResource {
         return customerService.getCustomer(email);
     }
 
-    public void createCustomer(String firstName, String lastName, String email) {
-        customerService.addCustomer(firstName, lastName, email);
+    public String createCustomer(String firstName, String lastName, String email) {
+        return customerService.addCustomer(firstName, lastName, email);
     }
 
     public IRoom getRoom(String roomNumber) {
@@ -42,9 +42,14 @@ public class HotelResource {
         return reservationService.reserveARoom(customer, room, checkInDate, checkOutDate);
     }
 
-    public Collection<Reservation> getCustomerReservations(String customerEmail) {
+    public void getCustomerReservations(String customerEmail) {
         Customer customer = getCustomer(customerEmail);
-        return reservationService.getCustomerReservations(customer);
+        Collection<Reservation> reservations = reservationService.getCustomerReservations(customer);
+        if (reservations.isEmpty()) {
+            System.out.println("\nNo reservations yet\n");
+        } else {
+            reservations.forEach(System.out::println);
+        }
     }
 
     public Collection<IRoom> findARoom(Date checkInDate, Date checkOutDate) {
