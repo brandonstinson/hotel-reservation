@@ -1,10 +1,13 @@
 package ui;
 
 import api.HotelResource;
+import model.*;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.Scanner;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainMenu {
 
@@ -60,10 +63,22 @@ public class MainMenu {
         if (customerEmail == null) {
             System.out.println("\nPlease create an account first\n");
         } else {
-            // TODO ask for dates
-            // TODO find and display rooms
-            // TODO reserve selected room
-            System.out.println("Booked");
+            Map<String, Date> dates = getDates(scanner);
+            Date checkInDate = dates.get("checkin");
+            Date checkoutDate = dates.get("checkout");
+
+            IRoom selectedRoom = selectRoom(scanner, checkInDate, checkoutDate);
+
+            System.out.println();
+
+            if (selectedRoom == null) {
+                System.out.println("No rooms available during those dates");
+            } else {
+                Reservation reservation = hotelResource.bookARoom(customerEmail, selectedRoom, checkInDate, checkoutDate);
+                System.out.println(reservation);
+            }
+
+            System.out.println();
         }
     }
 
@@ -71,7 +86,9 @@ public class MainMenu {
         if (customerEmail == null) {
             System.out.println("\nPlease create an account first\n");
         } else {
+            System.out.println("\nReservations");
             hotelResource.getCustomerReservations(customerEmail);
+            System.out.println();
         }
     }
 
@@ -80,13 +97,25 @@ public class MainMenu {
 
         System.out.println("\nCreate an account\n");
 
-        while(keepRunning) {
+        while (keepRunning) {
             System.out.println("Please enter first name:");
             String firstName = scanner.nextLine();
+            if (firstName.isBlank()) {
+                System.out.println("First name cannot be blank\n");
+                continue;
+            }
             System.out.println("Please enter last name:");
             String lastName = scanner.nextLine();
+            if (lastName.isBlank()) {
+                System.out.println("Last name cannot be blank\n");
+                continue;
+            }
             System.out.println("Please enter email:");
             String email = scanner.nextLine();
+            if (email.isBlank()) {
+                System.out.println("Email cannot be blank\n");
+                continue;
+            }
             String message = hotelResource.createCustomer(firstName, lastName, email);
 
             System.out.printf("\n%s\n\n", message);
@@ -95,5 +124,72 @@ public class MainMenu {
                 keepRunning = false;
             }
         }
+    }
+
+    private Map<String, Date> getDates(Scanner scanner) {
+        boolean keepRunning = true;
+        DateFormat format = new SimpleDateFormat("dd MMM yyy");
+
+        Date checkInDate = null;
+        Date checkoutDate = null;
+
+        Map<String, Date> dates = new HashMap<>();
+
+        System.out.println();
+
+        while (keepRunning) {
+            try {
+                System.out.println("Please enter a checkin date (dd mmm yyyy):");
+                String checkinDateInput = scanner.nextLine();
+                checkInDate = format.parse(checkinDateInput);
+
+                System.out.println("Please enter a checkout date (dd mmm yyyy):");
+                String checkoutDateInput = scanner.nextLine();
+                checkoutDate = format.parse(checkoutDateInput);
+
+                if (!checkoutDate.after(checkInDate)) {
+                    System.out.println("\nCheckout must be after checkin\n");
+                } else {
+                    keepRunning = false;
+                    dates.put("checkin", checkInDate);
+                    dates.put("checkout", checkoutDate);
+                }
+            } catch (ParseException ex) {
+                System.out.println("\nIncorrect format - use dd mmm yyyy\n");
+            }
+        }
+
+        return dates;
+    }
+
+    private IRoom selectRoom(Scanner scanner, Date checkin, Date checkout) {
+        Collection<IRoom> availableRooms = hotelResource.findARoom(checkin, checkout);
+
+        if (availableRooms.isEmpty()) {
+            return null;
+        }
+
+        Collection<String> availRoomNumbers = availableRooms.stream().map(IRoom::getRoomNumber).toList();
+        String availRoomsString = availRoomNumbers.toString();
+
+        boolean keepRunning = true;
+
+        IRoom selectedRoom = null;
+
+        while (keepRunning) {
+            System.out.println("\nAvailable Rooms:");
+            availableRooms.forEach(System.out::println);
+            System.out.printf("\nPlease select a room %s:   ", availRoomsString);
+            String roomSelection = scanner.nextLine();
+
+            if (!availRoomNumbers.contains(roomSelection)) {
+                System.out.println("\nInvalid selection");
+            } else {
+                keepRunning = false;
+                selectedRoom = availableRooms.stream().filter(rm -> Objects.equals(rm.getRoomNumber(), roomSelection)).toList().get(0);
+            }
+        }
+
+        return selectedRoom;
     }
 }
