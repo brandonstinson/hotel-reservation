@@ -2,8 +2,6 @@ package service;
 
 import model.*;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,11 +19,11 @@ public class ReservationService {
         return reservationService;
     }
 
-    Map<String, IRoom> rooms = new HashMap<>();
+    final Map<String, IRoom> rooms = new HashMap<>();
 
-    Map<String, Set<Date>> unavailableDates = new HashMap<>();
+    final Map<String, Set<Date>> unavailableDates = new HashMap<>();
 
-    Collection<Reservation> reservations = new ArrayList<>();
+    final Collection<Reservation> reservations = new ArrayList<>();
 
     public String addRoom(String roomNumber, Double price, RoomType roomType) {
         if (Objects.equals(roomNumber, "")) {
@@ -38,15 +36,6 @@ public class ReservationService {
         rooms.put(roomNumber, room);
         unavailableDates.put(roomNumber, new HashSet<>());
         return "Room created";
-    }
-
-    public IRoom getRoom(String roomNumber) {
-        Optional<IRoom> room = Optional.ofNullable(rooms.get(roomNumber));
-        return room.orElseThrow(() -> new NoSuchElementException("Room not found"));
-    }
-
-    public Collection<IRoom> getAllRooms() {
-        return rooms.values();
     }
 
     public void printAllRooms() {
@@ -67,17 +56,20 @@ public class ReservationService {
                     conflictFound = true;
                     break;
                 }
-            };
+            }
             if (!conflictFound) {
                 availableRoomNumbers.add(k);
             }
         });
-        return availableRoomNumbers.stream().map(rn -> rooms.get(rn)).collect(Collectors.toList());
+        return availableRoomNumbers.stream().map(rooms::get).collect(Collectors.toList());
     }
 
     public Reservation reserveARoom(Customer customer, IRoom room, Date checkInDate, Date checkOutDate) {
         Reservation reservation = new Reservation(customer, room, checkInDate, checkOutDate);
-        unavailableDates.put(room.getRoomNumber(), getDatesInRange(checkInDate, checkOutDate));
+        String rn = room.getRoomNumber();
+        Set<Date> combinedDateSet = new HashSet<>(unavailableDates.get(rn));
+        combinedDateSet.addAll(getDatesInRange(checkInDate, checkOutDate));
+        unavailableDates.put(rn, combinedDateSet);
         reservations.add(reservation);
         return reservation;
     }
@@ -108,11 +100,15 @@ public class ReservationService {
         Date current = checkin;
 
         while (current.before(checkout)) {
-            Date next = Date.from(current.toInstant().plusSeconds(60*60*24));
+            Date next = addDays(current, 1L);
             dates.add(next);
             current = next;
         }
 
         return dates;
+    }
+
+    public Date addDays(Date date, Long days) {
+        return Date.from(date.toInstant().plusSeconds(60*60*24*days));
     }
 }

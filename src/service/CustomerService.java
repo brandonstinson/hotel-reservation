@@ -17,7 +17,7 @@ public class CustomerService {
         return customerService;
     }
 
-    Map<String, Customer> customers = new HashMap<>();
+    final Map<String, Customer> customers = new HashMap<>();
 
     public String addCustomer(String firstName, String lastName, String email) {
         if (Objects.equals(firstName, "")) {
@@ -43,10 +43,6 @@ public class CustomerService {
 
     public Customer getCustomer(String email) {
         return customers.get(email);
-    }
-
-    public Collection<Customer> getAllCustomers() {
-        return customers.values();
     }
 
     public void printAllCustomers() {

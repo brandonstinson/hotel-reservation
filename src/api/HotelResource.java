@@ -22,8 +22,8 @@ public class HotelResource {
         return hotelResource;
     }
 
-    CustomerService customerService = CustomerService.getInstance();
-    ReservationService reservationService = ReservationService.getInstance();
+    final CustomerService customerService = CustomerService.getInstance();
+    final ReservationService reservationService = ReservationService.getInstance();
 
     public Customer getCustomer(String email) {
         return customerService.getCustomer(email);
@@ -31,10 +31,6 @@ public class HotelResource {
 
     public String createCustomer(String firstName, String lastName, String email) {
         return customerService.addCustomer(firstName, lastName, email);
-    }
-
-    public IRoom getRoom(String roomNumber) {
-        return reservationService.getRoom(roomNumber);
     }
 
     public Reservation bookARoom(String customerEmail, IRoom room, Date checkInDate, Date checkOutDate) {
@@ -54,5 +50,9 @@ public class HotelResource {
 
     public Collection<IRoom> findARoom(Date checkInDate, Date checkOutDate) {
         return reservationService.findRooms(checkInDate, checkOutDate);
+    }
+
+    public Date addDays(Date date, Long days) {
+        return reservationService.addDays(date, days);
     }
 }

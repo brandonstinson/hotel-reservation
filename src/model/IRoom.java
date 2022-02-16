@@ -2,11 +2,11 @@ package model;
 
 public interface IRoom {
 
-    public String getRoomNumber();
+    String getRoomNumber();
 
-    public Double getRoomPrice();
+    Double getRoomPrice();
 
-    public RoomType getRoomType();
+    RoomType getRoomType();
 
-    public Boolean isFree();
+    Boolean isFree();
 }
