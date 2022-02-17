@@ -76,7 +76,7 @@ public class ReservationService {
 
     public Collection<Reservation> getCustomerReservations(Customer customer) {
         if (customer == null) return Collections.emptyList();
-        return reservations.stream().filter(r -> r.getCustomer() == customer).toList();
+        return reservations.stream().filter(r -> r.getCustomer() == customer).collect(Collectors.toList());
     }
 
     public void printAllReservations() {

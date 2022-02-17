@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainMenu {
 
@@ -23,7 +24,7 @@ public class MainMenu {
                 try {
                     System.out.println("--- Main Menu ---\n");
                     System.out.println("1. Find and reserve a room");
-                    System.out.println("2. See my reservation");
+                    System.out.println("2. See my reservations");
                     System.out.println("3. Create an account");
                     System.out.println("4. Admin");
                     System.out.println("5. Exit");
@@ -59,15 +60,7 @@ public class MainMenu {
             Date checkInDate = dates.get("checkin");
             Date checkoutDate = dates.get("checkout");
 
-            IRoom selectedRoom = selectRoom(scanner, checkInDate, checkoutDate);
-
-            System.out.println();
-
-            if (selectedRoom != null) {
-                Reservation reservation = hotelResource.bookARoom(customerEmail, selectedRoom, checkInDate, checkoutDate);
-                System.out.println(reservation);
-                System.out.println();
-            }
+            selectRoom(scanner, checkInDate, checkoutDate);
         }
     }
 
@@ -151,8 +144,12 @@ public class MainMenu {
         return dates;
     }
 
-    private IRoom selectRoom(Scanner scanner, Date checkin, Date checkout) {
+    private void selectRoom(Scanner scanner, Date checkin, Date checkout) {
+
         DateFormat format = new SimpleDateFormat("dd MMM yyy");
+
+        Date bookingCheckinDate = checkin;
+        Date bookingCheckoutDate = checkout;
         Collection<IRoom> availableRooms = hotelResource.findARoom(checkin, checkout);
 
         if (availableRooms.isEmpty()) {
@@ -163,19 +160,19 @@ public class MainMenu {
 
             if (availableRooms.isEmpty()) {
                 System.out.println("\nNo rooms available on your selected dates.");
-                return null;
+                return;
             } else {
+                bookingCheckinDate = newCheckin;
+                bookingCheckoutDate = newCheckout;
                 System.out.println("\nNo rooms available on your selected dates.");
                 System.out.printf("We have these rooms available from %s to %s.\n", format.format(newCheckin), format.format(newCheckout));
             }
         }
 
-        Collection<String> availRoomNumbers = availableRooms.stream().map(IRoom::getRoomNumber).toList();
+        Collection<String> availRoomNumbers = availableRooms.stream().map(IRoom::getRoomNumber).collect(Collectors.toList());
         String availRoomsString = availRoomNumbers.toString();
 
         boolean keepRunning = true;
-
-        IRoom selectedRoom = null;
 
         while (keepRunning) {
             System.out.println("\nAvailable Rooms:");
@@ -184,17 +181,20 @@ public class MainMenu {
             String roomSelection = scanner.nextLine();
 
             if (Objects.equals(roomSelection, "x")) {
+                System.out.println();
                 break;
             } else {
                 if (!availRoomNumbers.contains(roomSelection)) {
                     System.out.println("\nInvalid selection");
                 } else {
                     keepRunning = false;
-                    selectedRoom = availableRooms.stream().filter(rm -> Objects.equals(rm.getRoomNumber(), roomSelection)).toList().get(0);
+                    IRoom selectedRoom = availableRooms.stream().filter(rm -> Objects.equals(rm.getRoomNumber(), roomSelection)).collect(Collectors.toList()).get(0);
+                    System.out.println();
+                    Reservation reservation = hotelResource.bookARoom(customerEmail, selectedRoom, bookingCheckinDate, bookingCheckoutDate);
+                    System.out.println(reservation);
+                    System.out.println();
                 }
             }
         }
-
-        return selectedRoom;
     }
 }
